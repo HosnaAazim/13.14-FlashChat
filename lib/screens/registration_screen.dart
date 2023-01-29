@@ -1,10 +1,13 @@
 import 'package:flash_chat_starting_project/components/rounded_button.dart';
 
 import '/constants.dart';
+import 'dart:core';
+import 'package:email_validator/email_validator.dart';
+
 import 'package:flutter/material.dart';
 
 class RegistrationScreen extends StatefulWidget {
-    static const String id = 'register_screen';
+  static const String id = 'register_screen';
   @override
   _RegistrationScreenState createState() => _RegistrationScreenState();
 }
@@ -31,27 +34,45 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             const SizedBox(
               height: 48.0,
             ),
-            TextField(
-              decoration: kTextFieldDecoration.copyWith(hintText: 
-              'Enter your email'),
+            TextFormField(
+              decoration:
+                  kTextFieldDecoration.copyWith(hintText: 'Enter your email',
+                  labelText: 'Email',
+
+                  ),
+                  onChanged: (value){
+
+                  },
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  validator:(email){
+                    return email != null && EmailValidator.validate(email)
+                    ? null: 'Please enter a valid email';
+                  }
             ),
             const SizedBox(
               height: 16,
             ),
-            TextField(
+            TextFormField(
               decoration: kTextFieldDecoration.copyWith(
-                hintText: 'Enter your password'
-              ) ,
+                hintText: 'Enter your password',
+                labelText: 'Password',
+              ),
+              obscureText: true,
               onChanged: (value) {
                 //Do something with the user input
               },
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              validator: (password){
+                return password != null && password.length>5 ? null: 'The password should be at least 6 characters';
+              },
             ),
-            
             const SizedBox(
               height: 24.0,
             ),
-           RoundedButton(color: kRegisterButtonColor, onPressed: (){}, 
-           title: 'Register'),
+            RoundedButton(
+                color: kRegisterButtonColor,
+                onPressed: () {},
+                title: 'Register'),
             const SizedBox(height: 12),
             IconButton(
               icon: const Icon(Icons.arrow_back),
