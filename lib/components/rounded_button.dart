@@ -1,16 +1,15 @@
+import 'package:flash_chat_starting_project/constants.dart';
 import 'package:flutter/material.dart';
-
 class RoundedButton extends StatelessWidget {
   final String title;
   final Color color;
-  final VoidCallback callback;
+  final VoidCallback onPressed;
 
   const RoundedButton(
-      {Key? key,
-      required this.title,
+      {super.key,
       required this.color,
-      required this.callback})
-      : super(key: key);
+      required this.onPressed,
+      required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -21,15 +20,16 @@ class RoundedButton extends StatelessWidget {
         color: color,
         borderRadius: BorderRadius.circular(30.0),
         child: MaterialButton(
-          onPressed: callback,
+          onPressed: onPressed,
           minWidth: 200.0,
           height: 42.0,
-          child: Text(
-            title,
-            style: const TextStyle(color: Colors.white),
+          child:  Text(
+           title,
+            style: const TextStyle(color: kWhiteColor),
           ),
         ),
       ),
     );
   }
 }
+
