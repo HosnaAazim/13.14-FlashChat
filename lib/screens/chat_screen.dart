@@ -1,7 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flash_chat_starting_project/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flash_chat_starting_project/constants.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatScreen extends StatefulWidget {
   static const String id = 'chat_screen';
@@ -10,20 +10,41 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  final _fireStore= FirebaseFirestore.instance;
+  final TextEditingController _messageTextController = TextEditingController();
+   
+    // void getMessages() async {
+    // var messages = await  _fireStore.collection('messages').get();
+    // for(var message in messages.docs){
+    //   print(message.data());
+    // }
 
+    // }
+
+    void messageStream(){
+      //Stream
+      _fireStore.collection('messages').snapshots().listen((event) {
+        for(var message in event.docs){
+      print(message.data());
+    }
+      });
+    }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: kBackgroundColor,
+      appBar: AppBar(   
+          backgroundColor: Colors.grey[900],
         automaticallyImplyLeading: false,
         leading: null,
         actions: <Widget>[
           IconButton(
               icon: const Icon(Icons.logout),
               onPressed: () {
-                Navigator.pop(context);
-                AuthService().signOut();
+                // Navigator.pop(context);
+                // AuthService().signOut();
+               // getMessages();
+
+               messageStream();
               }),
         ],
         title: const Text('⚡ ️Chat'),
@@ -34,19 +55,27 @@ class _ChatScreenState extends State<ChatScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Container(
+               
               decoration: kMessageContainerDecoration,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
                   Expanded(
                     child: TextField(
-                      onChanged: (value) {},
+                      
+                      controller: _messageTextController,
+                     
                       decoration: kMessageTextFieldDecoration,
                     ),
                   ),
                   TextButton(
+                    
                     onPressed: () {
-                      //Implement send functionality
+                      _fireStore.collection('message').add({
+                        'date': DateTime.now().millisecondsSinceEpoch,
+                        'text' : _messageTextController.text,
+                        'sender': AuthService().getCurrentUser!.email,
+                      });
                     },
                     child: const Icon(Icons.send,
                         size: 30, color: kSendButtonColor),
