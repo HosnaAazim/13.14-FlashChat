@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flash_chat_starting_project/screens/chat_screen.dart';
 import 'package:flash_chat_starting_project/screens/login_screen.dart';
 import 'package:flash_chat_starting_project/screens/registration_screen.dart';
+import 'package:flash_chat_starting_project/services/auth_service.dart';
 
 import 'constants.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +16,8 @@ void main() async{
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
 );
+
+print ('Use ${AuthService().getCurrentUser}');
   runApp(const FlashChat());
 }
 
@@ -22,20 +26,26 @@ class FlashChat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: kBackgroundColor,
-      ),
-      routes: {
-        WelcomeScreen.id : (context) => WelcomeScreen(),
-        LoginScreen.id: (context) => LoginScreen(),
-        RegistrationScreen.id : (context) => RegistrationScreen(),
-        ChatScreen.id : (context) => ChatScreen(),
+    return StreamBuilder<User?>(
 
-      },
-      initialRoute: WelcomeScreen.id ,
-      
+      stream: AuthService().AuthStateChanges,
+      builder: (context, snapshot) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData.dark().copyWith(
+            scaffoldBackgroundColor: kBackgroundColor,
+          ),
+          routes: {
+            WelcomeScreen.id : (context) => WelcomeScreen(),
+            LoginScreen.id: (context) => LoginScreen(),
+            RegistrationScreen.id : (context) => RegistrationScreen(),
+            ChatScreen.id : (context) => ChatScreen(),
+    
+          },
+          initialRoute: AuthService().getCurrentUser != null ? ChatScreen.id :WelcomeScreen.id,
+          
+        );
+      }
     );
   }
 }
