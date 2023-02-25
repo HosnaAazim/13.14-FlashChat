@@ -4,6 +4,8 @@ import 'package:flash_chat_starting_project/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:simple_circular_progress_bar/simple_circular_progress_bar.dart';
 
+import '../components/messagebubble.dart';
+
 class ChatScreen extends StatefulWidget {
   static const String id = 'chat_screen';
   @override
@@ -44,7 +46,6 @@ class _ChatScreenState extends State<ChatScreen> {
               onPressed: () {
                 Navigator.pop(context);
                 AuthService().signOut();
-                
               }),
         ],
         title: const Text('⚡ ️Chat'),
@@ -57,33 +58,7 @@ class _ChatScreenState extends State<ChatScreen> {
             mainAxisAlignment: MainAxisAlignment.end,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              StreamBuilder<QuerySnapshot>(
-                stream: _fireStore.collection('messages').snapshots(),
-                builder: (context, snapshot) {
-                  if(snapshot.connectionState == ConnectionState.waiting){
-                    return const Expanded(child: Center(
-                      child: SimpleCircularProgressBar(
-                        backColor: Colors.lightBlue,
-                      ),
-                    ));
-                  }
-                  if (snapshot.hasData) {
-                    var messages = snapshot.data!.docs;
-                    List<Text> messageWidgets = [];
-                    for (var message in messages) {
-                      var messageText = message.get('text');
-                      var sender = message.get('sender');
-                      Text messageWidget = Text('$messageText from $sender');
-                      messageWidgets.add(messageWidget);
-                    }
-                    return Column(
-                      children: messageWidgets,
-                    );
-                  } else {
-                    return const Center(child: Text('Snapshot has np data'),);
-                  }
-                },
-              ),
+              MessageStream(fireStore: _fireStore),
               Container(
                 decoration: kMessageContainerDecoration,
                 child: Row(
@@ -102,6 +77,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           'text': _messageTextController.text,
                           'sender': AuthService().getCurrentUser!.email,
                         });
+                        _messageTextController.clear();
                       },
                       child: const Icon(Icons.send,
                           size: 30, color: kSendButtonColor),
@@ -113,6 +89,55 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class MessageStream extends StatelessWidget {
+  const MessageStream({
+    Key? key,
+    required FirebaseFirestore fireStore,
+  }) : _fireStore = fireStore, super(key: key);
+
+  final FirebaseFirestore _fireStore;
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: _fireStore.collection('messages').snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Expanded(
+              child: Center(
+            child: SimpleCircularProgressBar(
+              backColor: Colors.lightBlue,
+            ),
+          ));
+        }
+        if (snapshot.hasData) {
+          var messages = snapshot.data!.docs;
+          List<Widget> messageBubbles = [];
+          for (var message in messages) {
+            var messageText = message.get('text');
+            var sender = message.get('sender');
+            Widget messageWidget = MessageBubble(
+              message: messageText,
+              sender: sender,
+            );
+
+            messageBubbles.add(messageWidget);
+          }
+          return Expanded(
+            child: ListView(
+              children: messageBubbles,
+            ),
+          );
+        } else {
+          return const Center(
+            child: Text('Snapshot has np data'),
+          );
+        }
+      },
     );
   }
 }
